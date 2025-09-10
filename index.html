@@ -121,149 +121,148 @@
 
 
     <script>
-        const dice = document.getElementById('dice');
-        const topicInput = document.getElementById('topicInput');
-        const addTopicBtn = document.getElementById('addTopicBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const topicList = document.getElementById('topicList');
-        const rollBtn = document.getElementById('rollBtn');
-        const resultModal = document.getElementById('resultModal');
-        const resultText = document.getElementById('resultText');
-        const closeModalBtn = document.getElementById('closeModalBtn');
+        document.addEventListener('DOMContentLoaded', () => {
+            const dice = document.getElementById('dice');
+            const topicInput = document.getElementById('topicInput');
+            const addTopicBtn = document.getElementById('addTopicBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const topicList = document.getElementById('topicList');
+            const rollBtn = document.getElementById('rollBtn');
+            const resultModal = document.getElementById('resultModal');
+            const resultText = document.getElementById('resultText');
+            const closeModalBtn = document.getElementById('closeModalBtn');
 
-        // デフォルトのテーマを空にしました
-        let topics = [];
-        
-        let isRolling = false;
+            // デフォルトのテーマを空にしました
+            let topics = [];
+            
+            let isRolling = false;
 
-        // トピックリストを描画
-        function renderTopics() {
-            topicList.innerHTML = '';
-            if (topics.length === 0) {
-                const li = document.createElement('li');
-                li.className = 'text-gray-400 text-center';
-                li.textContent = 'テーマを追加してください';
-                topicList.appendChild(li);
-            } else {
-                topics.forEach((topic, index) => {
+            // トピックリストを描画
+            function renderTopics() {
+                topicList.innerHTML = '';
+                if (topics.length === 0) {
                     const li = document.createElement('li');
-                    li.className = 'flex items-center justify-between bg-gray-600 p-2 rounded-lg';
-                    
-                    const span = document.createElement('span');
-                    span.textContent = topic;
-                    span.className = 'flex-grow mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap';
-                    li.appendChild(span);
-
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                        </svg>`;
-                    deleteBtn.className = 'text-red-400 hover:text-red-500 flex-shrink-0';
-                    deleteBtn.onclick = () => deleteTopic(index);
-                    li.appendChild(deleteBtn);
-
+                    li.className = 'text-gray-400 text-center';
+                    li.textContent = 'テーマを追加してください';
                     topicList.appendChild(li);
-                });
-            }
-            updateRollButton();
-        }
+                } else {
+                    topics.forEach((topic, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-center justify-between bg-gray-600 p-2 rounded-lg';
+                        
+                        const span = document.createElement('span');
+                        span.textContent = topic;
+                        span.className = 'flex-grow mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap';
+                        li.appendChild(span);
 
-        // トピック追加
-        function addTopic() {
-            const newTopic = topicInput.value.trim();
-            if (newTopic) {
-                topics.push(newTopic);
-                topicInput.value = '';
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>`;
+                        deleteBtn.className = 'text-red-400 hover:text-red-500 flex-shrink-0';
+                        deleteBtn.onclick = () => deleteTopic(index);
+                        li.appendChild(deleteBtn);
+
+                        topicList.appendChild(li);
+                    });
+                }
+                updateRollButton();
+            }
+
+            // トピック追加
+            function addTopic() {
+                const newTopic = topicInput.value.trim();
+                if (newTopic) {
+                    topics.push(newTopic);
+                    topicInput.value = '';
+                    renderTopics();
+                }
+            }
+
+            // トピック削除
+            function deleteTopic(index) {
+                topics.splice(index, 1);
                 renderTopics();
             }
-        }
+            
+            // トピックリセット
+            function resetTopics() {
+                topics = [];
+                renderTopics();
+            }
 
-        // トピック削除
-        function deleteTopic(index) {
-            topics.splice(index, 1);
-            renderTopics();
-        }
-        
-        // トピックリセット
-        function resetTopics() {
-            topics = [];
-            renderTopics();
-        }
-
-        // サイコロを振る
-        function rollDice() {
-            if (isRolling || topics.length === 0) return;
-            isRolling = true;
-            updateRollButton();
-
-            // サイコロの各面にランダムなテーマを設定
-            const faces = dice.querySelectorAll('.face');
-            const shuffledTopics = [...topics].sort(() => 0.5 - Math.random());
-            faces.forEach((face, index) => {
-                // テーマリストが面より少ない場合でも、テーマを繰り返して表示
-                const topic = shuffledTopics[index % shuffledTopics.length];
-                face.textContent = topic || '?';
-            });
-
-            dice.classList.add('rolling');
-
-            const resultIndex = Math.floor(Math.random() * topics.length);
-            const resultTopic = topics[resultIndex];
-
-            setTimeout(() => {
-                dice.classList.remove('rolling');
-                showResult(resultTopic);
-                isRolling = false;
+            // サイコロを振る
+            function rollDice() {
+                if (isRolling || topics.length === 0) return;
+                isRolling = true;
                 updateRollButton();
-            }, 2500); // Animation duration
-        }
 
-        // スタートボタンの状態更新
-        function updateRollButton() {
-            rollBtn.disabled = isRolling || topics.length === 0;
-        }
-        
-        // 結果表示
-        function showResult(topic) {
-            resultText.textContent = topic;
-            resultModal.classList.remove('hide');
-            setTimeout(() => {
-                resultModal.classList.remove('opacity-0');
-                resultModal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
-            }, 10);
-        }
-        
-        // モーダルを閉じる
-        function closeModal() {
-            resultModal.classList.add('opacity-0');
-            resultModal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                resultModal.classList.add('hide');
-            }, 300);
-        }
+                // サイコロの各面にランダムなテーマを設定
+                const faces = dice.querySelectorAll('.face');
+                const shuffledTopics = [...topics].sort(() => 0.5 - Math.random());
+                faces.forEach((face, index) => {
+                    // テーマリストが面より少ない場合でも、テーマを繰り返して表示
+                    const topic = shuffledTopics[index % shuffledTopics.length];
+                    face.textContent = topic || '?';
+                });
 
-        // イベントリスナー
-        addTopicBtn.addEventListener('click', addTopic);
-        topicInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addTopic();
+                dice.classList.add('rolling');
+
+                const resultIndex = Math.floor(Math.random() * topics.length);
+                const resultTopic = topics[resultIndex];
+
+                setTimeout(() => {
+                    dice.classList.remove('rolling');
+                    showResult(resultTopic);
+                    isRolling = false;
+                    updateRollButton();
+                }, 2500); // Animation duration
             }
-        });
-        resetBtn.addEventListener('click', resetTopics);
-        rollBtn.addEventListener('click', rollDice);
-        closeModalBtn.addEventListener('click', closeModal);
-        resultModal.addEventListener('click', (e) => {
-            if (e.target === resultModal) {
-                closeModal();
+
+            // スタートボタンの状態更新
+            function updateRollButton() {
+                rollBtn.disabled = isRolling || topics.length === 0;
             }
-        });
-        
-        // 初期化
-        window.onload = () => {
+            
+            // 結果表示
+            function showResult(topic) {
+                resultText.textContent = topic;
+                resultModal.classList.remove('hide');
+                setTimeout(() => {
+                    resultModal.classList.remove('opacity-0');
+                    resultModal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                }, 10);
+            }
+            
+            // モーダルを閉じる
+            function closeModal() {
+                resultModal.classList.add('opacity-0');
+                resultModal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    resultModal.classList.add('hide');
+                }, 300);
+            }
+
+            // イベントリスナー
+            addTopicBtn.addEventListener('click', addTopic);
+            topicInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTopic();
+                }
+            });
+            resetBtn.addEventListener('click', resetTopics);
+            rollBtn.addEventListener('click', rollDice);
+            closeModalBtn.addEventListener('click', closeModal);
+            resultModal.addEventListener('click', (e) => {
+                if (e.target === resultModal) {
+                    closeModal();
+                }
+            });
+            
+            // 初期化
             renderTopics();
-        };
-
+        });
     </script>
 </body>
 </html>
